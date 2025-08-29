@@ -10,13 +10,13 @@
 int main() {
     SetConsoleOutputCP(CP_UTF8);
     WordVector repo;
-    vetor_init(&repo);
+    inicia_vetor(&repo);
 
     BSTree bstRepo;
-    bst_init(&bstRepo);
+    iniciar_bst(&bstRepo);
 
     AVLTree avlRepo;
-    avl_init(&avlRepo);
+    inicia_avl(&avlRepo);
 
     while (1) {
         printf("\n=== Repositório de Letras - (Vetor / BST / AVL) ===\n");
@@ -36,7 +36,7 @@ int main() {
 
             SongWord *songWords = NULL;
             int swcount = 0;
-            char title[MAX_TITLE], composer[MAX_COMPOSER];
+            char title[256], composer[256];
             if (processar_arquivo_musica(path, &songWords, &swcount, title, composer) != 0) {
                 printf("Erro ao abrir/processar o arquivo '%s'\n", path);
                 continue;
@@ -50,13 +50,13 @@ int main() {
 
             double t2 = agora_segundos();
             for (int i=0;i<swcount;i++) {
-                bst_upsert(&bstRepo, songWords[i].word, title, composer, songWords[i].has_estrofe ? songWords[i].estrofe : "", songWords[i].count);
+                atualiza_bst(&bstRepo, songWords[i].word, title, composer, songWords[i].has_estrofe ? songWords[i].estrofe : "", songWords[i].count);
             }
             double t3 = agora_segundos();
 
             double t4 = agora_segundos();
             for (int i=0;i<swcount;i++) {
-                avl_upsert(&avlRepo, songWords[i].word, title, composer, songWords[i].has_estrofe ? songWords[i].estrofe : "", songWords[i].count);
+                atualiza_avl(&avlRepo, songWords[i].word, title, composer, songWords[i].has_estrofe ? songWords[i].estrofe : "", songWords[i].count);
             }
             double t5 = agora_segundos();
 
@@ -71,22 +71,22 @@ int main() {
             printf("Palavra para buscar: ");
             if (!fgets(term, sizeof(term), stdin)) continue;
             term[strcspn(term, "\n")] = 0;
-            char norm[MAX_WORD_LEN];
+            char norm[64];
             if (!normalizar_palavra(term, norm)) {
                 printf("Palavra inválida.\n");
                 continue;
             }
 
             double t0 = agora_segundos();
-            vetor_print_info(&repo, norm);
+            print_vetor(&repo, norm);
             double t1 = agora_segundos();
 
             double t2 = agora_segundos();
-            bst_print_info(&bstRepo, norm);
+            print_bst(&bstRepo, norm);
             double t3 = agora_segundos();
 
             double t4 = agora_segundos();
-            avl_print_info(&avlRepo, norm);
+            print_avl(&avlRepo, norm);
             double t5 = agora_segundos();
 
             printf("(Tempo busca vetor: %.6f s)\n", t1 - t0);
@@ -102,8 +102,8 @@ int main() {
         } else break;
     }
 
-    vetor_free(&repo);
-    bst_free(&bstRepo);
-    avl_free(&avlRepo);
+    libera_vetor(&repo);
+    liberar_bst(&bstRepo);
+    libera_avl(&avlRepo);
     return 0;
 }

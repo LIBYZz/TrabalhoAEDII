@@ -4,7 +4,7 @@
 #include "vetor.h"
 
 typedef struct AVLNode {
-    WordEntry data;
+    Palavra_Dados data;
     struct AVLNode *left;
     struct AVLNode *right;
     int height;
@@ -15,16 +15,16 @@ typedef struct {
     int size;
 } AVLTree;
 
-void avl_init(AVLTree *t);
-void avl_free(AVLTree *t);
+void inicia_avl(AVLTree *t);
+void libera_avl(AVLTree *t);
 
 // insere ou atualiza (mesma política do vetor/bst)
-void avl_upsert(AVLTree *t, const char *word, const char *title, const char *composer, const char *estrofe, int count_in_song);
+void atualiza_avl(AVLTree *t, const char *word, const char *title, const char *composer, const char *estrofe, int count_in_song);
 
 // busca por palavra
-WordEntry *avl_search(AVLTree *t, const char *word);
+Palavra_Dados *busca_avl(AVLTree *t, const char *word);
 
 // imprime info
-void avl_print_info(AVLTree *t, const char *word);
+void print_avl(AVLTree *t, const char *word);
 
 #endif

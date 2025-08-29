@@ -4,30 +4,30 @@
 #include "utils.h"
 
 typedef struct {
-    char word[MAX_WORD_LEN];
-    char best_title[MAX_TITLE];
-    char best_composer[MAX_COMPOSER];
-    char estrofe[MAX_ESTROFE]; // up to 100 chars stored
+    char word[64];
+    char best_title[256];
+    char best_composer[256];
+    char estrofe[256];
     int best_freq_in_song;
-    int total_freq; // across all songs in repository
-} WordEntry;
+    int total_freq;
+} Palavra_Dados;
 
 typedef struct {
-    WordEntry *data;
+    Palavra_Dados *data;
     int size;
     int capacity;
 } WordVector;
 
-void vetor_init(WordVector *v);
-void vetor_free(WordVector *v);
+void inicia_vetor(WordVector *v);
+void libera_vetor(WordVector *v);
 
 // insere ou atualiza uma palavra com dados da música atual
 void vetor_upsert(WordVector *v, const char *word, const char *title, const char *composer, const char *estrofe, int count_in_song);
 
-// busca por palavra (binary search). retorna index ou -1 se não encontrou
-int vetor_search(WordVector *v, const char *word);
+// busca por palavra (binary search). retorna index ou um número negativo se não encontrou
+int busca_binaria(WordVector *v, const char *word);
 
 // imprime informação da palavra (se encontrada)
-void vetor_print_info(WordVector *v, const char *word);
+void print_vetor(WordVector *v, const char *word);
 
 #endif

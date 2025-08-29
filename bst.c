@@ -3,94 +3,96 @@
 #include <string.h>
 #include <stdio.h>
 
-// helpers
-static BSTNode* new_node(const char *word, const char *title, const char *composer, const char *estrofe, int count_in_song) {
+BSTNode* novo_no(const char *word, const char *title, const char *composer, const char *estrofe, int count) {
     BSTNode *n = (BSTNode*)malloc(sizeof(BSTNode));
     if (!n) return NULL;
-    strncpy(n->data.word, word, MAX_WORD_LEN-1); n->data.word[MAX_WORD_LEN-1] = '\0';
-    strncpy(n->data.best_title, title, MAX_TITLE-1); n->data.best_title[MAX_TITLE-1] = '\0';
-    strncpy(n->data.best_composer, composer, MAX_COMPOSER-1); n->data.best_composer[MAX_COMPOSER-1] = '\0';
-    if (estrofe) strncpy(n->data.estrofe, estrofe, MAX_ESTROFE-1);
-    n->data.estrofe[MAX_ESTROFE-1] = '\0';
-    n->data.best_freq_in_song = count_in_song;
-    n->data.total_freq = count_in_song;
+    strncpy(n->data.word, word, 63); 
+    n->data.word[63] = '\0';
+    strncpy(n->data.best_title, title, 255); 
+    n->data.best_title[255] = '\0';
+    strncpy(n->data.best_composer, composer, 255); 
+    n->data.best_composer[255] = '\0';
+    if (estrofe) strncpy(n->data.estrofe, estrofe, 255);
+    n->data.estrofe[255] = '\0';
+    n->data.best_freq_in_song = count;
+    n->data.total_freq = count;
     n->left = n->right = NULL;
     return n;
 }
 
-void bst_init(BSTree *t) {
+void iniciar_bst(BSTree *t) {
     t->root = NULL;
     t->size = 0;
 }
 
-static void free_node_recursive(BSTNode *n) {
+void liberar_no_recursivo(BSTNode *n) {
     if (!n) return;
-    free_node_recursive(n->left);
-    free_node_recursive(n->right);
+    liberar_no_recursivo(n->left);
+    liberar_no_recursivo(n->right);
     free(n);
 }
 
-void bst_free(BSTree *t) {
+void liberar_bst(BSTree *t) {
     if (!t) return;
-    free_node_recursive(t->root);
+    liberar_no_recursivo(t->root);
     t->root = NULL;
     t->size = 0;
 }
 
-// recursive upsert
-static BSTNode* bst_upsert_rec(BSTNode *node, const char *word, const char *title, const char *composer, const char *estrofe, int count_in_song, int *did_insert) {
-    if (node == NULL) {
-        *did_insert = 1;
-        return new_node(word, title, composer, estrofe, count_in_song);
+// atualiza recursivamente
+BSTNode* atualiza_rec_bst(BSTNode *no, const char *word, const char *title, const char *composer, const char *estrofe, int count, int *inserido) {
+    if (no == NULL) {
+        *inserido = 1;
+        return novo_no(word, title, composer, estrofe, count);
     }
-
-    int cmp = strcmp(word, node->data.word);
+    int cmp = strcmp(word, no->data.word);
     if (cmp == 0) {
-        // update existing
-        node->data.total_freq += count_in_song;
-        if (count_in_song > node->data.best_freq_in_song) {
-            // update best music info
-            strncpy(node->data.best_title, title, MAX_TITLE-1); node->data.best_title[MAX_TITLE-1] = '\0';
-            strncpy(node->data.best_composer, composer, MAX_COMPOSER-1); node->data.best_composer[MAX_COMPOSER-1] = '\0';
+        no->data.total_freq += count;
+        if (count > no->data.best_freq_in_song) {
+            strncpy(no->data.best_title, title, 255); 
+            no->data.best_title[255] = '\0';
+            strncpy(no->data.best_composer, composer, 255); 
+            no->data.best_composer[255] = '\0';
             if (estrofe) {
-                strncpy(node->data.estrofe, estrofe, MAX_ESTROFE-1); node->data.estrofe[MAX_ESTROFE-1] = '\0';
+                strncpy(no->data.estrofe, estrofe, 255); 
+                no->data.estrofe[255] = '\0';
             }
-            node->data.best_freq_in_song = count_in_song;
+            no->data.best_freq_in_song = count;
         }
-        return node;
+        return no;
     } else if (cmp < 0) {
-        node->left = bst_upsert_rec(node->left, word, title, composer, estrofe, count_in_song, did_insert);
+        no->left = atualiza_rec_bst(no->left, word, title, composer, estrofe, count, inserido);
     } else {
-        node->right = bst_upsert_rec(node->right, word, title, composer, estrofe, count_in_song, did_insert);
+        no->right = atualiza_rec_bst(no->right, word, title, composer, estrofe, count, inserido);
     }
-    return node;
+    return no;
 }
 
-void bst_upsert(BSTree *t, const char *word, const char *title, const char *composer, const char *estrofe, int count_in_song) {
+void atualiza_bst(BSTree *t, const char *word, const char *title, const char *composer, const char *estrofe, int count) {
     if (!t || !word) return;
-    int did_insert = 0;
-    t->root = bst_upsert_rec(t->root, word, title, composer, estrofe, count_in_song, &did_insert);
-    if (did_insert) t->size++;
+    int inserido = 0;
+    t->root = atualiza_rec_bst(t->root, word, title, composer, estrofe, count, &inserido);
+    if (inserido) t->size++;
 }
 
-// search
-static BSTNode* bst_search_rec(BSTNode *node, const char *word) {
+
+BSTNode* busca_rec_bst(BSTNode *node, const char *word) {
     if (!node) return NULL;
     int cmp = strcmp(word, node->data.word);
     if (cmp == 0) return node;
-    if (cmp < 0) return bst_search_rec(node->left, word);
-    return bst_search_rec(node->right, word);
+    if (cmp < 0) return busca_rec_bst(node->left, word);
+    return busca_rec_bst(node->right, word);
 }
 
-WordEntry *bst_search(BSTree *t, const char *word) {
+Palavra_Dados *busca_bst(BSTree *t, const char *word) {
     if (!t) return NULL;
-    BSTNode *n = bst_search_rec(t->root, word);
+    BSTNode *n = busca_rec_bst(t->root, word);
     if (!n) return NULL;
     return &n->data;
 }
 
-void bst_print_info(BSTree *t, const char *word) {
-    WordEntry *e = bst_search(t, word);
+void print_bst(BSTree *t, const char *word) {
+    Palavra_Dados *e = busca_bst(t, word);
     if (!e) {
         printf("Palavra \"%s\" não encontrada no repositório (BST).\n", word);
         return;

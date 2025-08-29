@@ -3,84 +3,78 @@
 #include <string.h>
 #include <stdio.h>
 
-void vetor_init(WordVector *v) {
+void inicia_vetor(WordVector *v) {
     v->data = NULL;
     v->size = 0;
     v->capacity = 0;
 }
 
-void vetor_free(WordVector *v) {
+void libera_vetor(WordVector *v) {
     if (v->data) free(v->data);
     v->data = NULL;
     v->size = 0;
     v->capacity = 0;
 }
 
-static void ensure_capacity(WordVector *v, int need) {
+void garantir_capacidade(WordVector *v, int need) {
     if (v->capacity >= need) return;
-    int newcap = v->capacity == 0 ? 16 : v->capacity * 2;
-    while (newcap < need) newcap *= 2;
-    v->data = (WordEntry*)realloc(v->data, sizeof(WordEntry)*newcap);
-    v->capacity = newcap;
+    int new_cap = v->capacity == 0 ? 16 : v->capacity * 2;
+    while (new_cap < need) new_cap *= 2;
+    v->data = (Palavra_Dados*)realloc(v->data, sizeof(Palavra_Dados)*new_cap);
+    v->capacity = new_cap;
 }
 
-// busca binária por posição de inserção (retorna index >=0 se encontrado, ou -insertion_point-1)
-static int binary_search(WordVector *v, const char *word) {
-    int lo = 0, hi = v->size - 1;
-    while (lo <= hi) {
-        int mid = (lo + hi) >> 1;
-        int cmp = strcmp(v->data[mid].word, word);
-        if (cmp == 0) return mid;
-        if (cmp < 0) lo = mid + 1;
-        else hi = mid - 1;
+// busca binária por posição de inserção (retorna index >=0 se encontrado, ou -posicao_minima-1)
+int busca_binaria(WordVector *v, const char *word) {
+    int min = 0, max = v->size - 1;
+    while (min <= max) {
+        int med = (min + max) / 2;
+        int cmp = strcmp(v->data[med].word, word);
+        if (cmp == 0) return med;
+        if (cmp < 0) min = med + 1;
+        else max = med - 1;
     }
-    return -lo - 1;
+    return -min - 1;
 }
 
-void vetor_upsert(WordVector *v, const char *word, const char *title, const char *composer, const char *estrofe, int count_in_song) {
-    int pos = binary_search(v, word);
+void atualiza_palavra(WordVector *v, const char *word, const char *title, const char *composer, const char *estrofe, int count) {
+    int pos = busca_binaria(v, word);
     if (pos >= 0) {
         // existente: atualiza total e potencialmente dados da música com maior frequência
-        v->data[pos].total_freq += count_in_song;
-        if (count_in_song > v->data[pos].best_freq_in_song) {
+        v->data[pos].total_freq += count;
+        if (count > v->data[pos].best_freq_in_song) {
             // atualiza infos
-            strncpy(v->data[pos].best_title, title, MAX_TITLE-1); v->data[pos].best_title[MAX_TITLE-1]='\0';
-            strncpy(v->data[pos].best_composer, composer, MAX_COMPOSER-1); v->data[pos].best_composer[MAX_COMPOSER-1]='\0';
-            if (estrofe) { strncpy(v->data[pos].estrofe, estrofe, MAX_ESTROFE-1); v->data[pos].estrofe[MAX_ESTROFE-1]='\0'; }
-            v->data[pos].best_freq_in_song = count_in_song;
+            strncpy(v->data[pos].best_title, title, 255); v->data[pos].best_title[255]='\0';
+            strncpy(v->data[pos].best_composer, composer, 255); v->data[pos].best_composer[255]='\0';
+            if (estrofe) { strncpy(v->data[pos].estrofe, estrofe, 255); v->data[pos].estrofe[255]='\0'; }
+            v->data[pos].best_freq_in_song = count;
         }
     } else {
-        int insert_at = -pos - 1;
-        ensure_capacity(v, v->size + 1);
-        // move items
-        if (insert_at < v->size) {
-            memmove(&v->data[insert_at+1], &v->data[insert_at], sizeof(WordEntry)*(v->size - insert_at));
+        int insere = -pos - 1;
+        garantir_capacidade(v, v->size + 1);
+        // move os elementos da frente para a posição correta
+        if (insere < v->size) {
+            memmove(&v->data[insere+1], &v->data[insere], sizeof(Palavra_Dados)*(v->size - insere));
         }
-        // fill new entry
-        WordEntry *e = &v->data[insert_at];
-        strncpy(e->word, word, MAX_WORD_LEN-1); e->word[MAX_WORD_LEN-1]='\0';
-        strncpy(e->best_title, title, MAX_TITLE-1); e->best_title[MAX_TITLE-1]='\0';
-        strncpy(e->best_composer, composer, MAX_COMPOSER-1); e->best_composer[MAX_COMPOSER-1]='\0';
-        if (estrofe) strncpy(e->estrofe, estrofe, MAX_ESTROFE-1); e->estrofe[MAX_ESTROFE-1]='\0';
-        e->best_freq_in_song = count_in_song;
-        e->total_freq = count_in_song;
+        // insere a nova entrada
+        Palavra_Dados *e = &v->data[insere];
+        strncpy(e->word, word, 63); e->word[63]='\0';
+        strncpy(e->best_title, title, 255); e->best_title[255]='\0';
+        strncpy(e->best_composer, composer, 255); e->best_composer[255]='\0';
+        if (estrofe) strncpy(e->estrofe, estrofe, 255); e->estrofe[255]='\0';
+        e->best_freq_in_song = count;
+        e->total_freq = count;
         v->size++;
     }
 }
 
-int vetor_search(WordVector *v, const char *word) {
-    int pos = binary_search(v, word);
-    if (pos >= 0) return pos;
-    return -1;
-}
-
-void vetor_print_info(WordVector *v, const char *word) {
-    int idx = vetor_search(v, word);
+void print_vetor(WordVector *v, const char *word) {
+    int idx = busca_binaria(v, word);
     if (idx < 0) {
         printf("Palavra \"%s\" não encontrada no repositório (vetor).\n", word);
         return;
     }
-    WordEntry *e = &v->data[idx];
+    Palavra_Dados *e = &v->data[idx];
     printf("Palavra: %s\n", e->word);
     printf("Música (maior frequência): %s\n", e->best_title);
     printf("Compositor(a): %s\n", e->best_composer);

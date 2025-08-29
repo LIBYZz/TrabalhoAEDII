@@ -9,29 +9,27 @@
 #endif
 
 // remove pontuação e deixa minúsculo
-int normalizar_palavra(const char *in, char *out) {
+int normalizar_palavra(const char *stringEntrada, char *stringSaida) {
     int j = 0;
-    for (int i = 0; in[i] != '\0' && j < MAX_WORD_LEN-1; ++i) {
-        unsigned char c = (unsigned char)in[i];
+    for (int i = 0; stringEntrada[i] != '\0' && j < 63; ++i) {
+        unsigned char c = (unsigned char)stringEntrada[i];
         if (isalnum(c) || c == '\'' || c == '-') { // permite números e ' - (ajustar se quiser)
-            out[j++] = (char)tolower(c);
-        } else {
-            // treat as separator
-            if (j > 0 && out[j-1] != '\0' && out[j-1] != ' ') {
-                // do nothing, we handle separation later by tokenizing on spaces
-            }
-        }
+            stringSaida[j++] = (char)tolower(c);
+        } 
     }
-    out[j] = '\0';
-    // trim non-alnum ends already handled
-    int len = strlen(out);
+    stringSaida[j] = '\0';
+    int len = strlen(stringSaida);
     if (len <= 3) return 0;
     return 1;
 }
 
-static void trim_newline(char *s) {
-    size_t L = strlen(s);
-    while (L>0 && (s[L-1]=='\n' || s[L-1]=='\r')) { s[L-1] = '\0'; L--; }
+// evita problemas de comparação tirando caracteres finais de pular linha (L:\n, W:\r\n)
+void remove_newline(char *s) {
+    size_t tam = strlen(s);
+    while (tam > 0 && (s[tam-1]=='\n' || s[tam-1]=='\r')){
+        s[tam-1] = '\0';
+        tam--;
+    }
 }
 
 // retorna primeira estrofe (blocos separados por linha em branco) que contém a palavra
@@ -42,7 +40,7 @@ double agora_segundos() {
 }
 
 // processa o arquivo e produz um vetor de SongWord (alocado aqui; caller deve free)
-int processar_arquivo_musica(const char *filepath, SongWord **outWords, int *outCount, char title[MAX_TITLE], char composer[MAX_COMPOSER]) {
+int processar_arquivo_musica(const char *filepath, SongWord **outWords, int *outCount, char title[256], char composer[256]) {
     FILE *f = fopen(filepath, "r");
     if (!f) return -1;
 
@@ -54,12 +52,12 @@ int processar_arquivo_musica(const char *filepath, SongWord **outWords, int *out
     char line[1024];
     // ler título
     if (!fgets(line, sizeof(line), f)) { fclose(f); return -1; }
-    trim_newline(line);
-    strncpy(title, line, MAX_TITLE-1); title[MAX_TITLE-1]='\0';
+    remove_newline(line);
+    strncpy(title, line, 256-1); title[256-1]='\0';
 
     // ler compositor (pode ser linha vazia)
     if (!fgets(line, sizeof(line), f)) { composer[0]='\0'; }
-    else { trim_newline(line); strncpy(composer, line, MAX_COMPOSER-1); composer[MAX_COMPOSER-1]='\0'; }
+    else { remove_newline(line); strncpy(composer, line, 256-1); composer[256-1]='\0'; }
 
     // pular até encontrar linha em branco (início da letra) ou continuar
     // assumimos que a letra começa após a próxima linha em branco; mas se não houver, lemos o resto como letra
@@ -113,8 +111,8 @@ int processar_arquivo_musica(const char *filepath, SongWord **outWords, int *out
                 }
                 if (found == -1) {
                     words = (SongWord*)realloc(words, sizeof(SongWord)*(wcount+1));
-                    strncpy(words[wcount].word, tok, MAX_WORD_LEN-1);
-                    words[wcount].word[MAX_WORD_LEN-1] = '\0';
+                    strncpy(words[wcount].word, tok, 63);
+                    words[wcount].word[63] = '\0';
                     words[wcount].count = 1;
                     words[wcount].has_estrofe = 0;
                     words[wcount].estrofe[0] = '\0';
