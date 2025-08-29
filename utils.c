@@ -32,15 +32,13 @@ void remove_newline(char *s) {
     }
 }
 
-// retorna primeira estrofe (blocos separados por linha em branco) que contém a palavra
-// lê file content passed as array of lines. We will do this inline in processar_arquivo_musica.
 
 double agora_segundos() {
     return (double)clock() / (double)CLOCKS_PER_SEC;
 }
 
-// processa o arquivo e produz um vetor de SongWord (alocado aqui; caller deve free)
-int processar_arquivo_musica(const char *filepath, SongWord **outWords, int *outCount, char title[256], char composer[256]) {
+// processa o arquivo e produz um vetor de Palavra_Musica (alocado aqui; caller deve free)
+int processar_arquivo_musica(const char *filepath, Palavra_Musica **palavra_saida, int *cont_saida, char titulo[256], char autor[256]) {
     FILE *f = fopen(filepath, "r");
     if (!f) return -1;
 
@@ -53,11 +51,11 @@ int processar_arquivo_musica(const char *filepath, SongWord **outWords, int *out
     // ler título
     if (!fgets(line, sizeof(line), f)) { fclose(f); return -1; }
     remove_newline(line);
-    strncpy(title, line, 256-1); title[256-1]='\0';
+    strncpy(titulo, line, 256-1); titulo[256-1]='\0';
 
     // ler compositor (pode ser linha vazia)
-    if (!fgets(line, sizeof(line), f)) { composer[0]='\0'; }
-    else { remove_newline(line); strncpy(composer, line, 256-1); composer[256-1]='\0'; }
+    if (!fgets(line, sizeof(line), f)) { autor[0]='\0'; }
+    else { remove_newline(line); strncpy(autor, line, 256-1); autor[256-1]='\0'; }
 
     // pular até encontrar linha em branco (início da letra) ou continuar
     // assumimos que a letra começa após a próxima linha em branco; mas se não houver, lemos o resto como letra
@@ -65,7 +63,7 @@ int processar_arquivo_musica(const char *filepath, SongWord **outWords, int *out
     char **linhas = NULL;
     int nlin = 0;
     while (fgets(line, sizeof(line), f) != NULL) {
-        trim_newline(line);
+        remove_newline(line);
         linhas = (char**)realloc(linhas, sizeof(char*)*(nlin+1));
         linhas[nlin] = strdup(line);
         nlin++;
@@ -73,8 +71,8 @@ int processar_arquivo_musica(const char *filepath, SongWord **outWords, int *out
     fclose(f);
 
     // agora percorre linhas para construir estrofes (separadas por linhas vazias)
-    // para contar palavras por música, usaremos um vetor dinâmico SongWord
-    SongWord *words = NULL;
+    // para contar palavras por música, usaremos um vetor dinâmico Palavra_Musica
+    Palavra_Musica *words = NULL;
     int wcount = 0;
 
     char estrofe_buffer[4096];
@@ -107,12 +105,12 @@ int processar_arquivo_musica(const char *filepath, SongWord **outWords, int *out
                 // busca no vetor words
                 int found = -1;
                 for (int u=0; u<wcount; ++u) {
-                    if (strcmp(words[u].word, tok) == 0) { found = u; break; }
+                    if (strcmp(words[u].palavra, tok) == 0) { found = u; break; }
                 }
                 if (found == -1) {
-                    words = (SongWord*)realloc(words, sizeof(SongWord)*(wcount+1));
-                    strncpy(words[wcount].word, tok, 63);
-                    words[wcount].word[63] = '\0';
+                    words = (Palavra_Musica*)realloc(words, sizeof(Palavra_Musica)*(wcount+1));
+                    strncpy(words[wcount].palavra, tok, 63);
+                    words[wcount].palavra[63] = '\0';
                     words[wcount].count = 1;
                     words[wcount].has_estrofe = 0;
                     words[wcount].estrofe[0] = '\0';
@@ -146,7 +144,7 @@ int processar_arquivo_musica(const char *filepath, SongWord **outWords, int *out
     for (int i=0;i<nlin;i++) free(linhas[i]);
     free(linhas);
 
-    *outWords = words;
-    *outCount = wcount;
+    *palavra_saida = words;
+    *cont_saida = wcount;
     return 0;
 }

@@ -3,28 +3,28 @@
 
 #include "vetor.h"
 
-typedef struct AVLNode {
+typedef struct AVLNo {
     Palavra_Dados data;
-    struct AVLNode *left;
-    struct AVLNode *right;
+    struct AVLNo *left;
+    struct AVLNo *right;
     int height;
-} AVLNode;
+} AVLNo;
 
 typedef struct {
-    AVLNode *root;
-    int size;
-} AVLTree;
+    AVLNo *root;
+    int tamanho;
+} AVLArv;
 
-void inicia_avl(AVLTree *t);
-void libera_avl(AVLTree *t);
+void inicia_avl(AVLArv *t);
+void libera_avl(AVLArv *t);
 
 // insere ou atualiza (mesma política do vetor/bst)
-void atualiza_avl(AVLTree *t, const char *word, const char *title, const char *composer, const char *estrofe, int count_in_song);
+void atualiza_avl(AVLArv *t, const char *palavra, const char *titulo, const char *autor, const char *estrofe, int count);
 
 // busca por palavra
-Palavra_Dados *busca_avl(AVLTree *t, const char *word);
+Palavra_Dados *busca_avl(AVLArv *t, const char *palavra);
 
 // imprime info
-void print_avl(AVLTree *t, const char *word);
+void print_avl(AVLArv *t, const char *palavra);
 
 #endif

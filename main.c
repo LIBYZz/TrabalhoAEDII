@@ -9,13 +9,13 @@
 
 int main() {
     SetConsoleOutputCP(CP_UTF8);
-    WordVector repo;
+    Palavra_Vetor repo;
     inicia_vetor(&repo);
 
-    BSTree bstRepo;
+    BSTArv bstRepo;
     iniciar_bst(&bstRepo);
 
-    AVLTree avlRepo;
+    AVLArv avlRepo;
     inicia_avl(&avlRepo);
 
     while (1) {
@@ -34,29 +34,29 @@ int main() {
             if (!fgets(path, sizeof(path), stdin)) continue;
             path[strcspn(path, "\n")] = 0;
 
-            SongWord *songWords = NULL;
+            Palavra_Musica *songWords = NULL;
             int swcount = 0;
-            char title[256], composer[256];
-            if (processar_arquivo_musica(path, &songWords, &swcount, title, composer) != 0) {
+            char titulo[256], autor[256];
+            if (processar_arquivo_musica(path, &songWords, &swcount, titulo, autor) != 0) {
                 printf("Erro ao abrir/processar o arquivo '%s'\n", path);
                 continue;
             }
 
             double t0 = agora_segundos();
             for (int i=0;i<swcount;i++) {
-                vetor_upsert(&repo, songWords[i].word, title, composer, songWords[i].has_estrofe ? songWords[i].estrofe : "", songWords[i].count);
+                atualiza_vetor(&repo, songWords[i].palavra, titulo, autor, songWords[i].has_estrofe ? songWords[i].estrofe : "", songWords[i].count);
             }
             double t1 = agora_segundos();
 
             double t2 = agora_segundos();
             for (int i=0;i<swcount;i++) {
-                atualiza_bst(&bstRepo, songWords[i].word, title, composer, songWords[i].has_estrofe ? songWords[i].estrofe : "", songWords[i].count);
+                atualiza_bst(&bstRepo, songWords[i].palavra, titulo, autor, songWords[i].has_estrofe ? songWords[i].estrofe : "", songWords[i].count);
             }
             double t3 = agora_segundos();
 
             double t4 = agora_segundos();
             for (int i=0;i<swcount;i++) {
-                atualiza_avl(&avlRepo, songWords[i].word, title, composer, songWords[i].has_estrofe ? songWords[i].estrofe : "", songWords[i].count);
+                atualiza_avl(&avlRepo, songWords[i].palavra, titulo, autor, songWords[i].has_estrofe ? songWords[i].estrofe : "", songWords[i].count);
             }
             double t5 = agora_segundos();
 
@@ -96,8 +96,8 @@ int main() {
             int N;
             printf("N: ");
             if (scanf("%d%*c", &N) != 1) continue;
-            for (int i=0;i<N && i<repo.size;i++) {
-                printf("%s (%d total)\n", repo.data[i].word, repo.data[i].total_freq);
+            for (int i=0;i<N && i<repo.tamanho;i++) {
+                printf("%s (%d total)\n", repo.data[i].palavra, repo.data[i].total_freq);
             }
         } else break;
     }
