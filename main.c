@@ -19,7 +19,7 @@ int main() {
     inicia_avl(&avlRepo);
 
     while (1) {
-        printf("\n=== Repositório de Letras - (Vetor / BST / AVL) ===\n");
+        printf("\nRepositório de Letras - (Vetor / BST / AVL)\n");
         printf("1) Carregar arquivo de música (.txt)\n");
         printf("2) Buscar palavra (compara as 3 estruturas)\n");
         printf("3) Listar primeiras N palavras (vetor)\n");
