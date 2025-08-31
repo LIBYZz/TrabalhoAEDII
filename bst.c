@@ -39,7 +39,6 @@ void liberar_bst(BSTArv *t) {
     t->tamanho = 0;
 }
 
-// atualiza recursivamente
 BSTNo* atualiza_rec_bst(BSTNo *no, const char *palavra, const char *titulo, const char *autor, const char *estrofe, int count, int *inserido) {
     if (no == NULL) {
         *inserido = 1;
@@ -102,5 +101,11 @@ void print_bst(BSTArv *t, const char *palavra) {
     printf("Compositor(a): %s\n", e->max_autor);
     printf("Frequência nessa música: %d\n", e->max_freq_song);
     printf("Total no repositório: %d\n", e->total_freq);
-    printf("Trecho da estrofe: %s\n", e->estrofe);
+    
+    char trecho[101];
+    int len = strlen(e->estrofe);
+    int copylen = len < 100 ? len : 100;
+    strncpy(trecho, e->estrofe, copylen);
+    trecho[copylen] = '\0';
+    printf("Trecho da estrofe: %s\n", trecho);
 }

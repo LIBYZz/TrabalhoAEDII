@@ -1,14 +1,16 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <windows.h>
+#include <locale.h>
 #include "utils.h"
 #include "vetor.h"
 #include "bst.h"
 #include "avl.h"
 
 int main() {
-    SetConsoleOutputCP(CP_UTF8);
+    // Configura locale para UTF-8 (funciona em Windows/Linux)
+    setlocale(LC_ALL, "en_US.UTF-8");
+
     Palavra_Vetor repo;
     inicia_vetor(&repo);
 

@@ -24,7 +24,6 @@ void garantir_capacidade(Palavra_Vetor *v, int need) {
     v->capacity = new_cap;
 }
 
-// busca binária por posição de inserção (retorna index >=0 se encontrado, ou -posicao_minima-1)
 int busca_binaria(Palavra_Vetor *v, const char *palavra) {
     int min = 0, max = v->tamanho - 1;
     while (min <= max) {
@@ -40,10 +39,8 @@ int busca_binaria(Palavra_Vetor *v, const char *palavra) {
 void atualiza_vetor(Palavra_Vetor *v, const char *palavra, const char *titulo, const char *autor, const char *estrofe, int count) {
     int pos = busca_binaria(v, palavra);
     if (pos >= 0) {
-        // existente: atualiza total e potencialmente dados da música com maior frequência
         v->data[pos].total_freq += count;
         if (count > v->data[pos].max_freq_song) {
-            // atualiza infos
             strncpy(v->data[pos].max_titulo, titulo, 255); v->data[pos].max_titulo[255]='\0';
             strncpy(v->data[pos].max_autor, autor, 255); v->data[pos].max_autor[255]='\0';
             if (estrofe) { strncpy(v->data[pos].estrofe, estrofe, 255); v->data[pos].estrofe[255]='\0'; }
@@ -52,11 +49,9 @@ void atualiza_vetor(Palavra_Vetor *v, const char *palavra, const char *titulo, c
     } else {
         int insere = -pos - 1;
         garantir_capacidade(v, v->tamanho + 1);
-        // move os elementos da frente para a posição correta
         if (insere < v->tamanho) {
             memmove(&v->data[insere+1], &v->data[insere], sizeof(Palavra_Dados)*(v->tamanho - insere));
         }
-        // insere a nova entrada
         Palavra_Dados *e = &v->data[insere];
         strncpy(e->palavra, palavra, 63); e->palavra[63]='\0';
         strncpy(e->max_titulo, titulo, 255); e->max_titulo[255]='\0';
@@ -80,5 +75,11 @@ void print_vetor(Palavra_Vetor *v, const char *palavra) {
     printf("Compositor(a): %s\n", e->max_autor);
     printf("Frequência nessa música: %d\n", e->max_freq_song);
     printf("Total no repositório: %d\n", e->total_freq);
-    printf("Trecho da estrofe: %s\n", e->estrofe);
+    
+    char trecho[101];
+    int len = strlen(e->estrofe);
+    int copylen = len < 100 ? len : 100;
+    strncpy(trecho, e->estrofe, copylen);
+    trecho[copylen] = '\0';
+    printf("Trecho da estrofe: %s\n", trecho);
 }

@@ -14,7 +14,6 @@ int cmp_max_int(int a, int b) {
 AVLNo* novo_no_avl(const char *palavra, const char *titulo, const char *autor, const char *estrofe, int count) {
     AVLNo *n = (AVLNo*)malloc(sizeof(AVLNo));
     if (!n) return NULL;
-    // inicia tudo
     n->left = n->right = NULL;
     n->height = 1;
     n->data.palavra[0] = '\0';
@@ -42,16 +41,13 @@ AVLNo* novo_no_avl(const char *palavra, const char *titulo, const char *autor, c
     return n;
 }
 
-// rotações
 AVLNo* roda_direita(AVLNo *y) {
     AVLNo *x = y->left;
     AVLNo *T2 = x->right;
 
-    /* rotação */
     x->right = y;
     y->left = T2;
 
-    /* atualiza alturas */
     y->height = cmp_max_int(calc_altura(y->left), calc_altura(y->right)) + 1;
     x->height = cmp_max_int(calc_altura(x->left), calc_altura(x->right)) + 1;
 
@@ -62,11 +58,9 @@ AVLNo* roda_esquerda(AVLNo *x) {
     AVLNo *y = x->right;
     AVLNo *T2 = y->left;
 
-    /* rotação */
     y->left = x;
     x->right = T2;
 
-    /* atualiza alturas */
     x->height = cmp_max_int(calc_altura(x->left), calc_altura(x->right)) + 1;
     y->height = cmp_max_int(calc_altura(y->left), calc_altura(y->right)) + 1;
 
@@ -84,7 +78,6 @@ AVLNo* insert_rec(AVLNo *no, const char *palavra, const char *titulo, const char
 
     int cmp = strcmp(palavra, no->data.palavra);
     if (cmp == 0) {
-        /* atualiza existente */
         no->data.total_freq += count;
         if (count > no->data.max_freq_song) {
             if (titulo) {
@@ -105,23 +98,21 @@ AVLNo* insert_rec(AVLNo *no, const char *palavra, const char *titulo, const char
         no->right = insert_rec(no->right, palavra, titulo, autor, estrofe, count, inserido);
     }
 
-    /* atualiza altura e fator de balanceamento */
     no->height = 1 + cmp_max_int(calc_altura(no->left), calc_altura(no->right));
     int bf = balanceamento(no);
 
-    /* casos de rotação (com checagem de ponteiros por segurança) */
-    /* LL */
+
     if (bf > 1 && no->left != NULL && strcmp(palavra, no->left->data.palavra) < 0)
         return roda_direita(no);
-    /* RR */
+
     if (bf < -1 && no->right != NULL && strcmp(palavra, no->right->data.palavra) > 0)
         return roda_esquerda(no);
-    /* LR */
+
     if (bf > 1 && no->left != NULL && strcmp(palavra, no->left->data.palavra) > 0) {
         no->left = roda_esquerda(no->left);
         return roda_direita(no);
     }
-    /* RL */
+
     if (bf < -1 && no->right != NULL && strcmp(palavra, no->right->data.palavra) < 0) {
         no->right = roda_direita(no->right);
         return roda_esquerda(no);
@@ -181,5 +172,11 @@ void print_avl(AVLArv *t, const char *palavra) {
     printf("Compositor(a): %s\n", e->max_autor);
     printf("Frequência nessa música: %d\n", e->max_freq_song);
     printf("Total no repositório: %d\n", e->total_freq);
-    printf("Trecho da estrofe: %s\n", e->estrofe);
+    
+    char trecho[101];
+    int len = strlen(e->estrofe);
+    int copylen = len < 100 ? len : 100;
+    strncpy(trecho, e->estrofe, copylen);
+    trecho[copylen] = '\0';
+    printf("Trecho da estrofe: %s\n", trecho);
 }
